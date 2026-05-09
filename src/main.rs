@@ -1,8 +1,8 @@
+mod files;
+mod parser;
+
 use std::path::PathBuf;
 use clap::Parser;
-use std::fs;
-
-use clap::{ArgAction, Command, arg, command, value_parser};
 
 
 /// Simple program to greet a person
@@ -11,26 +11,30 @@ use clap::{ArgAction, Command, arg, command, value_parser};
 struct Args {
     /// Name of the person to greet
     #[arg(short, long)]
-    file: PathBuf, // Faut faire --file "axel"
+    logfile: PathBuf, // Faut faire --logfile "axel"
+
+    #[arg(long,num_args = 2, value_names = ["FIELD", "VALUE"])]
+    filter: Vec<String>, // Faut faire --filter "axel"
 }
 
 fn main() {
     let args = Args::parse();
 
-
-
-
-     match read_file_contents(&args.file){
-        Ok(contents) =>println!("{}",contents),
-        Err(error) => println!("{}",error),
-    };
-}
-
-fn read_file_contents(path: &PathBuf) -> Result<String, std::io::Error> {
-
-    fs::read_to_string(path)
+    let contents=files::read_file_contents(&args.logfile);
    
-
+    let filter_type = &args.filter[0];
+    let filter_value = &args.filter[1];
+   
+    let filtered: Vec<_>=contents.into_iter().filter(|line| line.matches_filter(filter_type,filter_value)).collect();
+    if filtered.is_empty(){
+        println!("Aucune ligne ne correspond au filtre.");
+    }else {
+        for entry in filtered {
+            println!("{:?}", entry.raw);
+        }
+    }
 }
+
+
 
 
