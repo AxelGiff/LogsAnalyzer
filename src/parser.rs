@@ -21,11 +21,11 @@ static RE: Lazy<Regex> = Lazy::new(|| {
 static RE_HTTP_METHOD: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b").unwrap()
 });
-    
+
 static RE_CUSTOM: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(?P<level>[A-Z]+)\]\s+(?P<message>.+)$").unwrap()
 });
-    
+
 static RE_SYSLOG: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r"^(?P<date>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<process>[^\s:]+)(?:\[\d+\])?:\s+(?P<message>.+)$").unwrap()
 });
@@ -164,9 +164,9 @@ impl LogEntry {
 
     pub fn parse_ssh(line: &str) -> Result<Option<Self>, String> {
         let re_custom = &RE_CUSTOM;
-       
+
         let re_syslog = &RE_SYSLOG;
-        
+
         if let Some(captures) = re_custom.captures(line) {
             let raw_date = captures
                 .name("date")

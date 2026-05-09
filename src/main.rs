@@ -20,17 +20,27 @@ struct Args {
 fn main() {
     let args = Args::parse();
 
-    let contents=files::read_file_contents(&args.logfile);
-   
+    let contents = match files::read_file_contents(&args.logfile) {
+        Ok(contents) => contents,
+        Err(e) => {
+            eprintln!("Erreur lecture fichier: {e}");
+            return;
+        }
+    };
+
     let filter_type = &args.filter[0];
     let filter_value = &args.filter[1];
-   
-    let filtered: Vec<_>=contents.into_iter().filter(|line| line.matches_filter(filter_type,filter_value)).collect();
-    if filtered.is_empty(){
+
+    let filtered: Vec<_> = contents
+        .into_iter()
+        .filter(|line| line.matches_filter(filter_type, filter_value))
+        .collect();
+
+    if filtered.is_empty() {
         println!("Aucune ligne ne correspond au filtre.");
-    }else {
+    } else {
         for entry in filtered {
-            println!("{:?}", entry.raw);
+            println!("{}", entry.raw);
         }
     }
 }
