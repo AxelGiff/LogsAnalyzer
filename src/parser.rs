@@ -20,24 +20,24 @@ pub static RE: Lazy<Regex> = Lazy::new(|| {
 
 pub static RE_HTTP_METHOD: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^\]]+)\]\s+(?P<method>GET|POST|PUT|PATCH|DELETE|OPTIONS)\s+(?P<path>/\S+)\s+(?P<status>\d{3})"
+        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^]]+)]\s+(?P<method>GET|POST|PUT|PATCH|DELETE|OPTIONS)\s+(?P<path>/\S+)\s+(?P<status>\d{3})"
     ).unwrap()
 });
 
 pub static RE_SYMFONY: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^\]]+)\]\s+(?P<message>.+)$"
+        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^]]+)]\s+(?P<message>.+)$"
     ).unwrap()
 });
 
 pub static RE_CUSTOM: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(?P<level>DEBUG|INFO|WARNING|ERROR|CRITICAL|SUCCESS)\](?:\s+\[(?P<context>[^\]]+)\])?\s+(?P<message>.+)$"    ).unwrap()
+        r"^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(?P<level>DEBUG|INFO|WARNING|ERROR|CRITICAL|SUCCESS)](?:\s+\[(?P<context>[^]]+)])?\s+(?P<message>.+)$"    ).unwrap()
 });
 
 pub static RE_SYSLOG: Lazy<Regex> = Lazy::new(|| {
     Regex::new(
-        r"^(?P<date>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<process>[^\s:]+)(?:\[\d+\])?:\s+(?P<message>.+)$"
+        r"^(?P<date>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<process>[^\s:]+)(?:\[\d+])?:\s+(?P<message>.+)$"
     ).unwrap()
 });
 
@@ -67,9 +67,7 @@ impl LogEntry {
         }
     }
 
-    pub fn get_date(&self) -> Option<&str> {
-        self.date.as_deref()
-    }
+   
     pub fn get_level(&self) -> Option<&str>{
         self.level.as_deref()
     }
@@ -105,9 +103,9 @@ impl LogEntry {
             date: None,
             level: None,
             request: None,
-            endpoint: endpoint,
+            endpoint,
             message: Option::from(line.to_string()),
-            httpmethod: httpmethod,
+            httpmethod,
         }
     }
 
