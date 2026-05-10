@@ -17,6 +17,12 @@ Le projet utilise les crates suivantes (versions dans Cargo.toml) :
 - once_cell = "1.21.4" — initialisation paresseuse des Regex
 - regex = "1.12.3" — expressions régulières pour parser les logs
 
+## Performance
+Etant donné la possibilité de lire un fichier de logs volumineux (plus de 10go par exemple), des outils comme BuffReader ou bien once_cell sont implémentés pour : 
+
+- BuffReader : Lire chaque ligne et ne pas stocker en mémoire
+- once_cell : Eviter de recharger les Regex en mémoire
+  
 ## Fonctionnalités
 
 - Détection et parsing de plusieurs formats de logs :
@@ -137,10 +143,3 @@ Commandes :
 ## Contribuer
 
 PR et issues bienvenus. N'hésitez pas à ouvrir une issue avant une grosse modification pour discuter du design.
-
----
-
-Si vous voulez, je peux :
-- ajouter des exemples concrets avec des lignes de logs fictives,
-- générer un binaire dans une release GitHub,
-- ajouter un fichier de configuration pour les formats de logs.
