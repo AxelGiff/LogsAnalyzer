@@ -1,3 +1,10 @@
+//! Fonctions d'acces fichier et d'affichage colore.
+//!
+//! Ce module centralise :
+//! - la lecture des lignes de logs ;
+//! - la conversion vers [`LogEntry`](crate::parser::LogEntry) ;
+//! - la coloration terminale des champs detectes.
+
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::PathBuf;
@@ -6,6 +13,9 @@ use colored::Colorize;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
+/// Lit un fichier de logs et retourne sa version parsee ligne par ligne.
+///
+/// Chaque ligne est convertie en [`LogEntry`] via [`LogEntry::parse`].
 pub fn read_file_contents(path: &PathBuf) -> io::Result<Vec<LogEntry>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -21,6 +31,16 @@ pub fn read_file_contents(path: &PathBuf) -> io::Result<Vec<LogEntry>> {
 
 }
 
+/// Affiche un flux de lignes en colorant les champs reconnus.
+///
+/// La fonction tente de colorer, selon le format detecte :
+/// - la date ;
+/// - le niveau (`INFO`, `ERROR`, etc.) ;
+/// - la methode HTTP ;
+/// - le status HTTP ;
+/// - certains champs syslog comme l'hote ou le process.
+///
+/// Le `reader` est consomme jusqu'a la fin du flux.
 pub fn print_colored_lines(
     reader: &mut BufReader<File>,
     re_http_method: &Lazy<Regex, fn() -> Regex>,
@@ -126,8 +146,10 @@ pub fn print_colored_lines(
 }
 
 
-
-
+/// Affiche une seule entree ou un bloc de texte deja filtre avec coloration.
+///
+/// Cette variante est utilisee apres application d'un filtre logique
+/// sur des [`LogEntry`] deja parses.
 pub fn print_filtered_colored_lines(
     reader: &String,
     re_http_method: &Lazy<Regex, fn() -> Regex>,
