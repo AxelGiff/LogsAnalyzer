@@ -1,3 +1,12 @@
+//! Point d'entree du binaire `LogsAnalyzer`.
+//!
+//! Le programme :
+//! - lit un fichier de logs ;
+//! - parse les lignes dans des formats connus ;
+//! - applique un filtre optionnel ;
+//! - affiche les lignes colorees ;
+//! - suit le fichier en temps reel avec `--tail`.
+
 mod files;
 mod parser;
 
@@ -16,17 +25,33 @@ use std::{path::Path, sync::mpsc};
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// Name of the person to greet
+    /// Chemin du fichier de log a lire.
     #[arg(short, long)]
-    logfile: PathBuf, // Faut faire --logfile "axel"
+    logfile: PathBuf,
 
-    #[arg(short,long,num_args = 2, value_names = ["FIELD", "VALUE"])]
-    filter: Vec<String>, // Faut faire --filter "axel"
+    /// Filtre simple sous la forme `--filter <champ> <valeur>`.
+    ///
+    /// Exemples :
+    /// - `--filter level ERROR`
+    /// - `--filter httpmethod POST`
+    #[arg(short, long, num_args = 2, value_names = ["FIELD", "VALUE"])]
+    filter: Vec<String>,
 
+    /// Active le suivi temps reel du fichier via `notify`.
     #[arg(short, long, action = clap::ArgAction::SetTrue)]
     tail: bool,
 }
 
+/// Lance l'analyseur de logs en mode lecture simple ou en mode suivi.
+///
+/// Flux principal :
+/// - valide l'acces au fichier cible ;
+/// - initialise les regex partagees ;
+/// - affiche toutes les lignes colorees, ou uniquement les lignes filtrees ;
+/// - active un watcher `notify` seulement si `--tail` est present.
+///
+/// En mode filtre, le fichier est relu et le filtre est recalcule
+/// a chaque evenement pour afficher l'etat courant du fichier.
 fn main() -> Result<()> {
     let args = Args::parse();
 
@@ -45,12 +70,15 @@ fn main() -> Result<()> {
     let re_custom_syslog = &RE_SYSLOG;
 
     if args.filter.is_empty(){
+        // Mode standard : affichage complet du fichier sans filtrage logique.
         let contenu = File::open(&args.logfile)?;
         let mut reader = BufReader::new(contenu);
         files::print_colored_lines(&mut reader, re_http_method, re_custom_ssh, re_custom_symfony, re_custom_syslog)
             .expect("TODO: panic message");
 
         if args.tail {
+            // En mode tail, on reouvre le fichier a chaque evenement pour relire
+            // son contenu courant depuis le debut.
             let (tx, rx) = mpsc::channel::<Result<Event>>();
             let mut watcher = notify::recommended_watcher(tx)?;
             watcher.watch(Path::new(&args.logfile), RecursiveMode::NonRecursive)?;
@@ -73,10 +101,13 @@ fn main() -> Result<()> {
             }
         }
     }else {
+        // Mode filtre : on evalue le champ et la valeur demandes par l'utilisateur.
         let filter_type = &args.filter[0];
         let filter_value = &args.filter[1];
 
         let print_filtered = || -> std::result::Result<(), Box<dyn std::error::Error>> {
+            // Le fichier est relu a chaque appel pour que le resultat du filtre
+            // reflète toujours l'etat courant du log.
             let contents = files::read_file_contents(&args.logfile)?;
 
             let filtered: Vec<_> = contents
