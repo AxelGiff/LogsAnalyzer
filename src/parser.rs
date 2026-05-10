@@ -14,20 +14,31 @@ pub struct LogEntry{
 }
 
 
-static RE: Lazy<Regex> = Lazy::new(|| {
+pub static RE: Lazy<Regex> = Lazy::new(|| {
     Regex::new(r#"(?:GET|POST|PUT|DELETE|PATCH)\s+(/[^\s"]+)"#).unwrap()
 });
 
-static RE_HTTP_METHOD: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"\b(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\b").unwrap()
+pub static RE_HTTP_METHOD: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^\]]+)\]\s+(?P<method>GET|POST|PUT|PATCH|DELETE|OPTIONS)\s+(?P<path>/\S+)\s+(?P<status>\d{3})"
+    ).unwrap()
 });
 
-static RE_CUSTOM: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(?P<level>[A-Z]+)\]\s+(?P<message>.+)$").unwrap()
+pub static RE_SYMFONY: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"\[(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]\s+(?P<level>INFO|WARNING|ERROR|SUCCESS|DEBUG|CRITICAL)\s+\[(?P<channel>[^\]]+)\]\s+(?P<message>.+)$"
+    ).unwrap()
 });
 
-static RE_SYSLOG: Lazy<Regex> = Lazy::new(|| {
-    Regex::new(r"^(?P<date>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<process>[^\s:]+)(?:\[\d+\])?:\s+(?P<message>.+)$").unwrap()
+pub static RE_CUSTOM: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"^(?P<date>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(?P<level>DEBUG|INFO|WARNING|ERROR|CRITICAL|SUCCESS)\](?:\s+\[(?P<context>[^\]]+)\])?\s+(?P<message>.+)$"    ).unwrap()
+});
+
+pub static RE_SYSLOG: Lazy<Regex> = Lazy::new(|| {
+    Regex::new(
+        r"^(?P<date>[A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(?P<host>\S+)\s+(?P<process>[^\s:]+)(?:\[\d+\])?:\s+(?P<message>.+)$"
+    ).unwrap()
 });
 
 
