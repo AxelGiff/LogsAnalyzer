@@ -1,15 +1,11 @@
-use std::{fs};
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Read};
 use std::path::PathBuf;
 use crate::parser::LogEntry;
-use clap::Parser;
 use colored::Colorize;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use crate::parser::RE_CUSTOM;
-use crate::parser::RE_HTTP_METHOD;
-use crate::parser::RE_SYMFONY;
+
 pub fn read_file_contents(path: &PathBuf) -> io::Result<Vec<LogEntry>> {
     let file = File::open(path)?;
     let reader = BufReader::new(file);
@@ -133,7 +129,7 @@ pub fn print_colored_lines(
 
 
 pub fn print_filtered_colored_lines(
-    reader: String,
+    reader: &String,
     re_http_method: &Lazy<Regex, fn() -> Regex>,
     re_custom: &Lazy<Regex, fn() -> Regex>,
     re_symfony: &Lazy<Regex, fn() -> Regex>,
